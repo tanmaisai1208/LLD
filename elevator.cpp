@@ -1,4 +1,4 @@
-** 1) DIRECTION: **
+1) DIRECTION: 
 enum class Direction {
     UP,
     DOWN,
