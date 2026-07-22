@@ -1,1 +1,78 @@
 # LLD
+
+okay, now lets move onto completely different model leaving the xgboost, i think u were aware that i wanted to try transformer model after i am done with the xgboost, so the thing is, we will still follow the same raw data folder, same resampled and wide_csv files. So i think only new file maybe related to setting up the transformer model and then doing training and testing is required, dont focus on charge-scheduling event task, only focus on the trajectory projection task like similar to xgboost_final_validation.py job. 
+
+below are some notes that i did self-learn about transformer
+
+                                                    [[TRANSFORMERS]]
+
+TRANSFORMERS DOENST LEARN THRESHOLD OR TREE RULES, IT LEARNS WHICH PREV INFO SHOULD I PAY MORE ATTNETION FOR PREDICTING TOMORROW
+
+[Attention Mechanism]: So given a sequence of 1days of data, instead of processesing from left to right, it lets every element 
+to attend every other element simultaneously
+
+For each element of sequecne there are 3 vectors [Q-Query, K-Key, V-Value]
+
+
+Query = what i am looking For
+Key = what do i contain
+Score = how much should i pay attention to this other element
+Value = what information do i actually pass if u attend to me
+
+for pred day15, it asigns attention wts to day 1 to 14
+
+Attention(Q , K , V) = softmax(Q*K^T/sqrt(d_k)) * V   [T=transpose, dot product, As Q,K,V etc are vectors]
+Reasoning: 
+1) Like lets say day15's "Query Q" might be = which prev days look relavent to me?
+2) And every day has a "Key K" which describes what information it contains
+2) So we do dot product between Query Q and with each day's Key K. So day13 is Q*K13^t amount of relavence to day14 
+4) divided by sqrt(d_k) is to normalize the dot prod values. ( d_k = d_model / n_heads )
+5) softmax is just like normalizing func only , where softmax(x1,x2,x3)=(y1,y2,y3) 
+   where y1=e^x1/summation(e^xi).
+6) now after using softmax function we get the attention wts w1,w2,w3.... of all prev days and we have to multiply those 
+   wts to their day's values like w1*v+w2*v2+w3*v3...
+
+----------------------------------
+
+[MULTI-HEAD ATTENTION]: 
+so INSTEAD OF DOING ATTNETION ONCE, IT DOES IT MULTIPLE TIMES IN PARALLEL WITH DIFFERENT LEARNING 
+PROJECTIONS.
+
+like one might specilise in weekly patterns, another in day-of-week effects, another in recent trends effects
+
+-----------------------------------
+
+[POSITIONAL ENCODING]:
+since attention has no sense of order, it treats all positions equally, so postional encodings are added to input to the days
+
+-----------------------------------
+
+[FULL ARCHITECTURE]:
+
+Transformer Block = Multi-head self attnetion -> Add & Norm -> Feed-Forward network -> Add & Norm
+And the output is passed through one final linear layer to produce predictions
+
+14*52=728, so Transformers doesnt see it as 728 features like xgboost does, it sees it as (14, 48 not 52 because date information is 
+already there). So it sees like day1 -> 48 features, day2 -> 48 features etc.
+
+d_model (embedding size)
+n_heads
+num_layers (no of encoder blocks)
+dropout
+learning_rate
+dim_feedforward (by FFN layer)
+Weight delay (L2 regularization to avoid Overfitting)
+
+[FULL PIPELINE]: 
+
+Input Data layer -> Embedding Layer -> Positional Encoding -> Transformer Encoder Blocks 1 (the full arch which was mentioned
+earlier above is this layer itself) -> TE BLock 2 -> Flaatten/Pooling layer -> Dense Layer -> Outputs
+
+1) [Embedding layer] (d_model=64 means converts 48->64)
+2) [Inside TE block, the FFN (feed forward network layer)] passes through small neural network and does 64->128->64
+to leanr non-linear relationships
+3) [Dense Layer] : currently we are at (14,64) but we need only 24 sized output, so it does 64->24 somehow
+
+and I also got to know that transformers generally need millions of data point to really show their capability, but we really dont feed that much, at worst case we feed (24+24+4)*14days which is around 728 features in total, so then i got to know that since this is one thing to be considered we have to use some small sized or build a small transformer model and proceed with it. 
+
+So generate the full code to be done, i dont know how many new files of codes are to be written for setting up trasnformer and then train and test (and also inclduing hyper-parameter tuning if transformers contain any) , so u do it accordingly 
