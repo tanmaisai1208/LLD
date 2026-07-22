@@ -98,41 +98,26 @@ def date_feats(date_str):
     return [float(ts.dayofweek), float(ts.day), float(ts.month), float(ts.year)]
 
 
-def build_windows(wide, seq_len=SEQ_LEN):
+def build_sequence_for_day(wide, seq_end_idx, seq_len=SEQ_LEN):
     """
-    Slides a `seq_len`-day window across the device's full history.
-    Returns lists of (date, X_seq[seq_len,48], x_target_date[4], y[24]).
-    A window is skipped entirely if any day inside it (context OR target)
-    has any NaN value - same NaN-guard philosophy as the XGBoost pipeline
-    (no fabricated/imputed values feeding the model).
+    Builds the (seq_len, 48) input sequence for predicting/training on day
+    `seq_end_idx`, using days [seq_end_idx-seq_len, seq_end_idx). If fewer
+    than seq_len days exist before seq_end_idx (early in the dataset),
+    LEFT-PADS with zero-vectors - same convention XGBoost's
+    build_padded_feature_row used for early-window days.
+    Individual missing hours within an otherwise-valid day are imputed to
+    0 (only the TARGET day is required to be fully NaN-free - see the
+    caller's NaN guard on the target - context imputation matches
+    XGBoost's native missing-value handling in spirit, since a dense
+    tensor can't carry NaN through the network).
     """
-    n_days = len(wide)
-    windows = []
-    for target_idx in range(seq_len, n_days):
-        ctx_idxs = list(range(target_idx - seq_len, target_idx))
+    start = max(0, seq_end_idx - seq_len)
+    day_idxs = list(range(start, seq_end_idx))
+    pad_needed = seq_len - len(day_idxs)
 
-        seq_rows = []
-        valid = True
-        for i in ctx_idxs:
-            day_vals = wide.iloc[i][DSOCDT_COLS + SOC_COLS].values.astype(float)
-            if np.isnan(day_vals).any():
-                valid = False
-                break
-            seq_rows.append(day_vals)
-        if not valid:
-            continue
-
-        y = wide.iloc[target_idx][DSOCDT_COLS].values.astype(float)
-        if np.isnan(y).any():
-            continue
-
-        X_seq = np.stack(seq_rows, axis=0)                       # (14, 48)
-        x_target_date = np.array(date_feats(wide.index[target_idx]), dtype=float)  # (4,)
-
-        windows.append({
-            "date": wide.index[target_idx],
-            "X_seq": X_seq,
-            "x_target_date": x_target_date,
-            "y": y,
-        })
-    return windows
+    seq = [np.zeros(N_DAY_FEATS) for _ in range(pad_needed)]
+    for i in day_idxs:
+        day_vals = wide.iloc[i][DSOCDT_COLS + SOC_COLS].values.astype(float)
+        day_vals = np.nan_to_num(day_vals, nan=0.0)
+        seq.append(day_vals)
+    return np.stack(seq, axis=0)   # (seq_len, 48)
