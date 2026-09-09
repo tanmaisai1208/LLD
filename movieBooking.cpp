@@ -5,67 +5,6 @@ enum class MovieGenre { ACTION, COMEDY, DRAMA, HORROR, SCIFI, THRILLER };
 
 enum class ShowStatus { SCHEDULED, RUNNING, COMPLETED, CANCELLED };
 
-// ----- Forward declarations -----
-class Show;
-class Movie;
-class Theater;
-
-// ----- Booking class -----
-class Booking {
-private:
-    string bookingId;
-    Show* show;
-    string customerName;
-    string customerPhone;
-    vector<int> seatNumbers;
-    double totalAmount;
-    BookingStatus status;
-    string timestamp;
-public:
-    Booking(string bookingId, Show* show, string customerName,
-            string customerPhone, const vector<int>& seatNumbers)
-        : bookingId(move(bookingId)), show(show), customerName(move(customerName)),
-          customerPhone(move(customerPhone)), seatNumbers(seatNumbers),
-          status(BookingStatus::PENDING) {
-        // timestamp
-        auto now = time(nullptr);
-        auto tm = *localtime(&now);
-        ostringstream oss;
-        oss << put_time(&tm, "%Y-%m-%d %H:%M:%S");
-        timestamp = oss.str();
-        calculate();
-    }
-    string getBookingId() const { return bookingId; }
-    Show* getShow() const { return show; }
-    string getCustomerName() const { return customerName; }
-    string getCustomerPhone() const { return customerPhone; }
-    const vector<int>& getSeatNumbers() const { return seatNumbers; }
-    double getTotalAmount() const { return totalAmount; }
-    BookingStatus getStatus() const { return status; }
-    string getTimestamp() const { return timestamp; }
-    void calculateTotalAmount() { totalAmount = show->getTicketPrice() * seatNumbers.size(); }
-    void setStatus(BookingStatus s) { status = s; }
-    void displayInfo() const {
-        cout << "\nBooking Details:" << endl;
-        cout << "Booking ID: " << bookingId << endl;
-        cout << "Customer Name: " << customerName << endl;
-        cout << "Customer Phone: " << customerPhone << endl;
-        show->displayInfo();
-        cout << "Seats: ";
-        for (int seat : seatNumbers) cout << seat << " ";
-        cout << endl;
-        cout << "Total Amount: $" << fixed << setprecision(2) << totalAmount << endl;
-        cout << "Status: ";
-        switch (status) {
-            case BookingStatus::PENDING: cout << "Pending"; break;
-            case BookingStatus::CONFIRMED: cout << "Confirmed"; break;
-            case BookingStatus::CANCELLED: cout << "Cancelled"; break;
-        }
-        cout << endl;
-        cout << "Booking Time: " << timestamp << endl;
-    }
-};
-
 // ----- Movie class -----
 class Movie {
 private:
@@ -170,51 +109,58 @@ public:
     }
 };
 
-// ----- BookingSystem class -----
-class BookingSystem {
+// ----- Booking class -----
+class Booking {
 private:
-    vector<Movie*> movies;
-    vector<Theater*> theaters;
-    vector<Booking*> bookings;
-    int bookingIdCounter;
+    string bookingId;
+    Show* show;
+    string customerName;
+    string customerPhone;
+    vector<int> seatNumbers;
+    double totalAmount;
+    BookingStatus status;
+    string timestamp;
 public:
-    BookingSystem() : bookingIdCounter(1) {}
-    
-    void addMovie(Movie* m) { movies.push_back(m); }
-    void addTheater(Theater* t) { theaters.push_back(t); }
-    Booking* createBooking(string showId, string customerName,
-                           string customerPhone, const vector<int>& seats) {
-        Show* show = findShow(showId);
-        if (!show || show->getStatus() != ShowStatus::SCHEDULED) return nullptr;
-        // check availability
-        for (int seat : seats) if (!show->isSeatAvailable(seat)) return nullptr;
-        // book seats
-        for (int seat : seats) show->bookSeat(seat);
-        Booking* b = new Booking(generateBookingId(), show, customerName, customerPhone, seats);
-        b->setStatus(BookingStatus::CONFIRMED);
-        bookings.push_back(b);
-        return b;
+    Booking(string bookingId, Show* show, string customerName,
+            string customerPhone, const vector<int>& seatNumbers)
+        : bookingId(move(bookingId)), show(show), customerName(move(customerName)),
+          customerPhone(move(customerPhone)), seatNumbers(seatNumbers),
+          status(BookingStatus::PENDING) {
+        // timestamp
+        auto now = time(nullptr);
+        auto tm = *localtime(&now);
+        ostringstream oss;
+        oss << put_time(&tm, "%Y-%m-%d %H:%M:%S");
+        timestamp = oss.str();
+        calculate();
     }
-    bool cancelBooking(string bookingId) {
-        Booking* b = findBooking(bookingId);
-        if (!b || b->getStatus() == BookingStatus::CANCELLED) return false;
-        Show* show = b->getShow();
-        for (int seat : b->getSeatNumbers()) show->cancelSeatBooking(seat);
-        b->setStatus(BookingStatus::CANCELLED);
-        return true;
-    }
-private:
-    Show* findShow(const string& showId) const {
-        for (const auto& th : theaters) {
-            for (const auto& sh : th->getShows()) {
-                if (sh->getShowId() == showId) return sh;
-            }
+    string getBookingId() const { return bookingId; }
+    Show* getShow() const { return show; }
+    string getCustomerName() const { return customerName; }
+    string getCustomerPhone() const { return customerPhone; }
+    const vector<int>& getSeatNumbers() const { return seatNumbers; }
+    double getTotalAmount() const { return totalAmount; }
+    BookingStatus getStatus() const { return status; }
+    string getTimestamp() const { return timestamp; }
+    void calculateTotalAmount() { totalAmount = show->getTicketPrice() * seatNumbers.size(); }
+    void setStatus(BookingStatus s) { status = s; }
+    void displayInfo() const {
+        cout << "\nBooking Details:" << endl;
+        cout << "Booking ID: " << bookingId << endl;
+        cout << "Customer Name: " << customerName << endl;
+        cout << "Customer Phone: " << customerPhone << endl;
+        show->displayInfo();
+        cout << "Seats: ";
+        for (int seat : seatNumbers) cout << seat << " ";
+        cout << endl;
+        cout << "Total Amount: $" << fixed << setprecision(2) << totalAmount << endl;
+        cout << "Status: ";
+        switch (status) {
+            case BookingStatus::PENDING: cout << "Pending"; break;
+            case BookingStatus::CONFIRMED: cout << "Confirmed"; break;
+            case BookingStatus::CANCELLED: cout << "Cancelled"; break;
         }
-        return nullptr;
+        cout << endl;
+        cout << "Booking Time: " << timestamp << endl;
     }
-    Booking* findBooking(const string& bookingId) const {
-        for (auto b : bookings) if (b->getBookingId() == bookingId) return b;
-        return nullptr;
-    }
-    string generateBookingId() { return "B" + to_string(bookingIdCounter++); }
 };
