@@ -13,17 +13,6 @@ public:
         currentPlayer = 1;
     }
 
-    void printBoard() {
-        for (int i = 0; i < 3; ++i) {
-            for (int j = 0; j < 3; ++j) {
-                cout << board[i][j];
-                if (j < 2) cout << " | ";
-            }
-            cout << endl;
-            if (i < 2) cout << "---------" << endl;
-        }
-    }
-
     bool isBoardFull() {
         for (auto &row : board)
             for (char cell : row)
@@ -53,7 +42,6 @@ public:
         return false;
     }
 
-    int getCurrentPlayer() { return currentPlayer; }
 };
 
 int main() {
@@ -65,14 +53,10 @@ int main() {
     };
 
     for (auto move : moves) {
-        game.printBoard();
-        cout << "Player " << game.getCurrentPlayer()
-             << " plays (" << move.first << "," << move.second << ")\n";
         game.makeMove(move.first, move.second);
         if (game.checkWinner()) break;
     }
 
-    game.printBoard();
     if (game.checkWinner()) {
         cout << "Player " << (3 - game.getCurrentPlayer()) << " wins!\n";
     } else {
