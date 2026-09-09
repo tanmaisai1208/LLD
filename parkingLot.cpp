@@ -73,6 +73,13 @@ private:
     map<string, ParkingSpot*> occupiedSpots; // maps licensePlate -> spot
     int capacity;
     int availableSpots;
+    ParkingSpot* findAvailableSpot(const Vehicle* v) const {
+        for (auto s : spots) {
+            if (s->isAvailable() && s->canFitVehicle(v)) return s;
+        }
+        return nullptr;
+    }
+
 public:
     ParkingLot(int numCompact, int numRegular, int numLarge)
         : capacity(numCompact + numRegular + numLarge), availableSpots(capacity) {
@@ -105,13 +112,5 @@ public:
             ++availableSpots;
         }
         return v;
-
-private:
-    ParkingSpot* findAvailableSpot(const Vehicle* v) const {
-        for (auto s : spots) {
-            if (s->isAvailable() && s->canFitVehicle(v)) return s;
-        }
-        return nullptr;
-    }
 };
 
