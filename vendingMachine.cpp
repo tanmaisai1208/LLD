@@ -29,30 +29,11 @@ public:
     }
 };
 
-
-// ----- Transaction class (merged) -----
-class Transaction {
-private:
-    string transactionId;
-    string productId;
-    int quantity;
-    int amount;
-
-public:
-    Transaction(std::string transactionId, std::string productId, int quantity, double amount)
-    }
-
-    // Accessors
-    std::string getTransactionId() const { return transactionId; }
-    std::string getProductId() const { return productId; }
-};
-
 // ----- VendingMachine class (merged) -----
 class VendingMachine {
 private:
     string machineId;
     vector<Product*> products;
-    vector<Transaction*> transactions;
     double cashBalance;
     int productIdCounter;
     int transactionIdCounter;
@@ -60,7 +41,7 @@ private:
 public:
     VendingMachine(std::string machineId)
         : machineId(std::move(machineId)), cashBalance(0.0), operational(true),
-          productIdCounter(1), transactionIdCounter(1) {}
+          productIdCounter(1) {}
    
     // Basic getters
 
@@ -71,11 +52,13 @@ public:
         products.push_back(p);
         return p;
     }
+
     void removeProduct(const std::string& productId) {
         auto it = std::find_if(products.begin(), products.end(),
             [&](Product* p){ return p->getProductId() == productId; });
         if (it != products.end()) { delete *it; products.erase(it); }
     }
+
     bool restockProduct(const std::string& productId, int qty) {
         Product* p = findProduct(productId);
         if (!p) return false;
@@ -87,12 +70,9 @@ public:
         if (!p || !p->isAvailable() || p->getQuantity() < qty) return nullptr;
         double total = p->getPrice() * qty;
         if (payment < total) return nullptr;
-        std::string tid = generateTransactionId();
         Transaction* tr = new Transaction(tid, productId, qty, total);
         if (p->removeQuantity(qty)) {
             cashBalance += total;
-            transactions.push_back(tr);
-            return tr;
         }
         return nullptr;
     }
