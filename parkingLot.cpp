@@ -76,16 +76,7 @@ private:
 public:
     ParkingLot(int numCompact, int numRegular, int numLarge)
         : capacity(numCompact + numRegular + numLarge), availableSpots(capacity) {
-        int spotNumber = 1;
-        for (int i = 0; i < numCompact; ++i) {
-            spots.push_back(new ParkingSpot(spotNumber++, SpotType::COMPACT));
-        }
-        for (int i = 0; i < numRegular; ++i) {
-            spots.push_back(new ParkingSpot(spotNumber++, SpotType::REGULAR));
-        }
-        for (int i = 0; i < numLarge; ++i) {
-            spots.push_back(new ParkingSpot(spotNumber++, SpotType::LARGE));
-        }
+        
     }
     ~ParkingLot() {
         for (auto s : spots) delete s;
@@ -114,12 +105,7 @@ public:
             ++availableSpots;
         }
         return v;
-    }
-    ParkingSpot* findVehicle(const string& licensePlate) const {
-        auto it = occupiedSpots.find(licensePlate);
-        return it != occupiedSpots.end() ? it->second : nullptr;
-    }
-   
+
 private:
     ParkingSpot* findAvailableSpot(const Vehicle* v) const {
         for (auto s : spots) {
