@@ -5,11 +5,12 @@ private:
     string pin;
     double balance;
 public:
-    Account(string accountNumber, string pin, double initialBalance = 0.0)
-        : accountNumber(move(accountNumber)), pin(move(pin)), balance(initialBalance) {}
-    string getAccountNumber() const { return accountNumber; }
-    bool validatePin(const string& inputPin) const { return pin == inputPin; }
-    double getBalance() const { return balance; }
+    Account(string accountNum, string password, double initialBalance = 0.0) {
+        accountNumber = accountNumber;    pin = password;    balance=initialBalance;
+    }
+    string getAccountNumber() { return accountNumber; }
+    double getBalance() { return balance; }
+    bool validatePin(string& inputPin) { return pin == inputPin; }
     bool deposit(double amount) {
         if (amount <= 0) return false;
         balance += amount;
@@ -35,7 +36,7 @@ public:
     ATM() : currentAccount(nullptr), isAuthenticated(false) {}
     
     void addAccount(Account* account) { accounts.push_back(account); }
-    bool authenticate(const string& accountNumber, const string& pin) {
+    bool authenticate(string& accountNumber, string& pin) {
         for (auto account : accounts) {
             if (account->getAccountNumber() == accountNumber && account->validatePin(pin)) {
                 currentAccount = account;
