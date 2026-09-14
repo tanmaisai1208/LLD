@@ -7,7 +7,7 @@ enum class VehicleType {
 };
 
 enum class SpotType {
-    COMPACT,
+    SMALL,
     REGULAR,
     LARGE
 };
@@ -20,8 +20,8 @@ private:
 public:
     Vehicle(string licensePlate, VehicleType type)
         : licensePlate(move(licensePlate)), type(type) {}
-    string getLicensePlate() const { return licensePlate; }
-    VehicleType getType() const { return type; }
+    string getLicensePlate()  { return licensePlate; }
+    VehicleType getType() { return type; }
 };
 
 // ---------- ParkingSpot class ----------
@@ -34,17 +34,17 @@ private:
 public:
     ParkingSpot(int spotNumber, SpotType type)
         : spotNumber(spotNumber), type(type), vehicle(nullptr), available(true) {}
-    int getSpotNumber() const { return spotNumber; }
-    SpotType getType() const { return type; }
-    Vehicle* getVehicle() const { return vehicle; }
-    bool isAvailable() const { return available; }
-    bool canFitVehicle(const Vehicle* v) const {
+    int getSpotNumber()  { return spotNumber; }
+    SpotType getType()  { return type; }
+    Vehicle* getVehicle()  { return vehicle; }
+    bool isAvailable()  { return available; }
+    bool canFitVehicle( Vehicle* v)  {
         if (!v) return false;
         switch (v->getType()) {
             case VehicleType::MOTORCYCLE:
                 return true; // any spot
             case VehicleType::CAR:
-                return type != SpotType::COMPACT; // cannot go into compact
+                return type != SpotType::SMALL; // cannot go into compact
             case VehicleType::TRUCK:
             case VehicleType::BUS:
                 return type == SpotType::LARGE;
@@ -57,12 +57,10 @@ public:
         available = false;
         return true;
     }
-    Vehicle* removeVehicle() {
-        if (!vehicle) return nullptr;
-        Vehicle* removed = vehicle;
+    
+    void removeVehicle() {
         vehicle = nullptr;
         available = true;
-        return removed;
     }
 };
 
@@ -73,7 +71,7 @@ private:
     map<string, ParkingSpot*> occupiedSpots; // maps licensePlate -> spot
     int capacity;
     int availableSpots;
-    ParkingSpot* findAvailableSpot(const Vehicle* v) const {
+    ParkingSpot* findAvailableSpot( Vehicle* v)  {
         for (auto s : spots) {
             if (s->isAvailable() && s->canFitVehicle(v)) return s;
         }
@@ -88,11 +86,10 @@ public:
     ~ParkingLot() {
         for (auto s : spots) delete s;
     }
-    int getCapacity() const { return capacity; }
-    int getAvailableSpots() const { return availableSpots; }
+    int getCapacity() { return capacity; }
+    int getAvailableSpots()  { return availableSpots; }
     bool parkVehicle(Vehicle* v) {
         if (!v) return false;
-        if (occupiedSpots.find(v->getLicensePlate()) != occupiedSpots.end()) return false;
         ParkingSpot* spot = findAvailableSpot(v);
         if (!spot) return false;
         if (spot->parkVehicle(v)) {
@@ -102,15 +99,11 @@ public:
         }
         return false;
     }
-    Vehicle* removeVehicle(const string& licensePlate) {
+    void removeVehicle( string& licensePlate) {
         auto it = occupiedSpots.find(licensePlate);
-        if (it == occupiedSpots.end()) return nullptr;
-        ParkingSpot* spot = it->second;
-        Vehicle* v = spot->removeVehicle();
-        if (v) {
-            occupiedSpots.erase(it);
-            ++availableSpots;
-        }
-        return v;
+        spot = it->second;
+        spot->removeVehicle();
+        occupiedSpots.erase(it);
+        ++availableSpots;
 };
 
