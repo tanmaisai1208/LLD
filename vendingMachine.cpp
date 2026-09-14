@@ -8,8 +8,8 @@ private:
     bool available;
 
 public:
-    Product(std::string productId, std::string name, double price, int quantity = 0)
-        : productId(std::move(productId)), name(std::move(name)), price(price), quantity(quantity), available(true) {}
+    Product(string productId,string name, double price, int quantity = 0)
+        : productId(move(productId)), move(name), price(price), quantity(quantity), available(true) {}
 
     // Accessors
     std::string getProductId() const { return productId; }
@@ -36,48 +36,43 @@ private:
     vector<Product*> products;
     double cashBalance;
     int productIdCounter;
-    int transactionIdCounter;
 
 public:
-    VendingMachine(std::string machineId)
-        : machineId(std::move(machineId)), cashBalance(0.0), operational(true),
+    VendingMachine(string machineId)
+        : machineId(move(machineId)), cashBalance(0.0), operational(true),
           productIdCounter(1) {}
    
     // Basic getters
 
     // Core operations
-    Product* addProduct(const std::string& name, double price, int quantity = 0) {
-        std::string pid = generateProductId();
+    Product* addProduct(string& name, double price, int quantity = 0) {
+        string pid = generateProductId();
         Product* p = new Product(pid, name, price, quantity);
         products.push_back(p);
         return p;
     }
 
     void removeProduct(const std::string& productId) {
-        auto it = std::find_if(products.begin(), products.end(),
+        auto it = find_if(products.begin(), products.end(),
             [&](Product* p){ return p->getProductId() == productId; });
         if (it != products.end()) { delete *it; products.erase(it); }
     }
 
-    bool restockProduct(const std::string& productId, int qty) {
+    bool restockProduct(string& productId, int qty) {
         Product* p = findProduct(productId);
         if (!p) return false;
         p->addQuantity(qty);
         return true;
     }
-    Transaction* purchaseProduct(const std::string& productId, int qty, double payment) {
+    
+    bool purchaseProduct(const std::string& productId, int qty, double payment) {
         Product* p = findProduct(productId);
-        if (!p || !p->isAvailable() || p->getQuantity() < qty) return nullptr;
+        if (!p || !p->isAvailable() || p->getQuantity() < qty) return false;
         double total = p->getPrice() * qty;
-        if (payment < total) return nullptr;
-        Transaction* tr = new Transaction(tid, productId, qty, total);
+        if (payment < total) return false;
         if (p->removeQuantity(qty)) {
             cashBalance += total;
         }
-        return nullptr;
+        return true;
     }
-    void addCash(double amount) { cashBalance += amount; }
-    bool withdrawCash(double amount) {
-        if (amount <= cashBalance) { cashBalance -= amount; return true; }
-        return false;
-    }
+    
