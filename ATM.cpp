@@ -33,7 +33,10 @@ private:
     Account* currentAccount;
     bool isAuthenticated;
 public:
-    ATM() : currentAccount(nullptr), isAuthenticated(false) {}
+    ATM() {
+        currentAccount = nullptr;
+        isAuthenticated = false;
+    }
     
     void addAccount(Account* account) { accounts.push_back(account); }
     bool authenticate(string& accountNumber, string& pin) {
