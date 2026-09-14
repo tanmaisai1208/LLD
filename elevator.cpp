@@ -74,18 +74,8 @@ public:
             elevators.emplace_back(i);
     }
 
-    void requestElevator(int floor, Direction direction) {
-        // Choose the nearest/appropriate elevator.
-        // Simplified here: use first elevator.
-        elevators[0].addRequest(floor);
-    }
-
     void selectFloor(int elevatorId, int floor) {
-        elevators[elevatorId - 1].addRequest(floor);
+        elevators[elevatorId].addRequest(floor);
     }
 
-    void step() {
-        for (auto &elevator : elevators)
-            elevator.move();
-    }
 };
