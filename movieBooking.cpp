@@ -13,26 +13,21 @@ private:
     string description;
     MovieGenre genre;
     int durationMinutes;
-    string language;
-    vector<string> cast;
     bool active;
 public:
     Movie(string movieId, string title, string description,
           MovieGenre genre, int durationMinutes, string language)
         : movieId(move(movieId)), title(move(title)), description(move(description)),
           genre(genre), durationMinutes(durationMinutes), language(move(language)), active(true) {}
-    string getMovieId() const { return movieId; }
-    string getTitle() const { return title; }
-    string getDescription() const { return description; }
-    MovieGenre getGenre() const { return genre; }
-    int getDurationMinutes() const { return durationMinutes; }
-    string getLanguage() const { return language; }
-    bool isActive() const { return active; }
-    const vector<string>& getCast() const { return cast; }
+    string getMovieId()  { return movieId; }
+    string getTitle()  { return title; }
+    string getDescription()  { return description; }
+    MovieGenre getGenre()  { return genre; }
+    int getDurationMinutes()  { return durationMinutes; }
+    string getLanguage()  { return language; }
+    bool isActive()  { return active; }
+     vector<string>& getCast()  { return cast; }
     void setActive(bool status) { active = status; }
-    void displayInfo() const {
-
-    }
 };
 
 // ----- Show class -----
@@ -56,25 +51,19 @@ public:
     string getStartTime() const { return startTime; }
     double getTicketPrice() const { return ticketPrice; }
     ShowStatus getStatus() const { return status; }
-    bool isSeatAvailable(int seatNumber) const {
-        if (seatNumber < 1 || seatNumber > (int)seats.size()) return false;
-        return !seats[seatNumber - 1];
+    bool isSeatAvailable(int seatNumber)  {
+        return !seats[seatNumber];
     }
 
     bool bookSeat(int seatNumber) {
         if (!isSeatAvailable(seatNumber)) return false;
-        seats[seatNumber - 1] = true;
+        seats[seatNumber] = true;
         return true;
     }
     void cancelSeatBooking(int seatNumber) {
-        if (seatNumber >= 1 && seatNumber <= (int)seats.size()) seats[seatNumber - 1] = false;
+        seats[seatNumber] = false;
     }
-    void setStatus(ShowStatus s) { status = s; }
-    int getAvailableSeats() const {
-        int cnt = 0;
-        for (bool b : seats) if (!b) ++cnt;
-        return cnt;
-    }
+   
     void displayInfo() const {
 
     }
@@ -127,21 +116,12 @@ public:
           customerPhone(move(customerPhone)), seatNumbers(seatNumbers),
           status(BookingStatus::PENDING) {
         // timestamp
-        auto now = time(nullptr);
-        auto tm = *localtime(&now);
-        ostringstream oss;
-        oss << put_time(&tm, "%Y-%m-%d %H:%M:%S");
-        timestamp = oss.str();
-        calculate();
+        
     }
+
     string getBookingId() const { return bookingId; }
     Show* getShow() const { return show; }
-    string getCustomerName() const { return customerName; }
-    string getCustomerPhone() const { return customerPhone; }
-    const vector<int>& getSeatNumbers() const { return seatNumbers; }
-    double getTotalAmount() const { return totalAmount; }
-    BookingStatus getStatus() const { return status; }
-    string getTimestamp() const { return timestamp; }
+   
     void calculateTotalAmount() { totalAmount = show->getTicketPrice() * seatNumbers.size(); }
     void setStatus(BookingStatus s) { status = s; }
     void displayInfo() const {
