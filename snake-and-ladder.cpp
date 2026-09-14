@@ -8,14 +8,10 @@ public:
     Board(int size = 100) : size(size) {}
     int getSize() const { return size; }
     void addSnake(int start, int end) {
-        if (start > end && start <= size) {
-            snakes[start] = end;
-        }
+        snakes[start] = end;
     }
     void addLadder(int start, int end) {
-        if (end > start && end <= size) {
-            ladders[start] = end;
-        }
+        ladders[start] = end;
     }
     int getNextPosition(int currentPos) const {
         auto snakeIt = snakes.find(currentPos);
@@ -35,15 +31,8 @@ public:
 
 // ----- Dice class -----
 class Dice {
-private:
-    int sides;
-public:
-    Dice(int sides = 6) {
-        
-    }
-
     int roll() const {
-        return (rand() % sides) + 1;
+        return (rand() % 6) + 1;
     }
 };
 
